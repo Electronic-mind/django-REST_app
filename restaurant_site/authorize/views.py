@@ -103,18 +103,13 @@ class UserViewAPI(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (AllowAny,)
 
-    def get(self, request, pk):
+    def get(self, request):
         user_token = request.COOKIES.get('access_token')
 
         if not user_token:
             raise AuthenticationFailed('Unauthenticated user.')
         
-        emp_id = pk
         payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
-
-        if emp_id != payload['emp_id']:
-            raise AuthenticationFailed('Unauthenticated user.')
-        
 
         user_model = get_user_model()
         user = user_model.objects.filter(emp_id=payload['emp_id']).first()
