@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 
 
 
-
+# This class is created to modify the authentication requirements
 class CustomUserManager(BaseUserManager):
     def create_user(self, emp_id, name, password):
         if not emp_id:
@@ -35,7 +35,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
-
+# Custom user class 
 class User(AbstractBaseUser, PermissionsMixin):
     emp_id = models.CharField(primary_key=True, unique=True, null=False, max_length=4, validators=[RegexValidator(regex='^\d{4}$', message='Length has to be 4', code='nomatch')])
     name = models.CharField(max_length=255, null=False)
