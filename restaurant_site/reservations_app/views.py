@@ -60,6 +60,7 @@ class NewReservationAPIView(APIView):
         user_model = get_user_model()
         user = user_model.objects.filter(emp_id=payload['emp_id']).first()
         if user.is_authenticated:
+            # list all the reservations
             reservations = list(Reservation.objects.values())
             return Response(reservations)
         
@@ -81,6 +82,7 @@ class NewReservationAPIView(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid(raise_exception=True):
 
+                # get the data from the serializer
                 start_time = serializer.validated_data['start_time']
                 end_time = serializer.validated_data['end_time']
                 seats = int(serializer.validated_data['seats_needed'])

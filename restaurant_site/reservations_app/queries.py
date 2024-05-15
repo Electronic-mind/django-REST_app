@@ -1,6 +1,5 @@
 from .models import Reservation, Table
 from datetime import datetime, date
-from django.db.models import Q
 
 def is_reserved(start_time, end_time, table) -> bool:
     '''Check if the table is booked for the given time interval.'''
