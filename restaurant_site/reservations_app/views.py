@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 
 from .serializers import ReservationSerializer
 from .models import Reservation, Table
+from .queries import *
+
 from restaurant_site import settings
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
@@ -20,18 +22,13 @@ class ReservationAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (AllowAny,)
 
-    def get(self, request, pk):
+    def get(self, request):
         # Check if the access token exists
         user_token = request.COOKIES.get('access_token')
         if not user_token:
             raise AuthenticationFailed('Unauthenticated user.')
         
-        emp_id = pk
         payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
-
-        # check if the id in the access token matches the current id
-        if emp_id != payload['emp_id']:
-            raise AuthenticationFailed('Unauthenticated user.')
 
         user_model = get_user_model()
         user = user_model.objects.filter(emp_id=payload['emp_id']).first()
@@ -84,56 +81,50 @@ class NewReservationAPIView(APIView):
             if serializer.is_valid(raise_exception=True):
 
 
-                start_t = serializer.validated_data['start_time']
-                end_t = serializer.validated_data['end_time']
+                start_time = serializer.validated_data['start_time']
+                end_time = serializer.validated_data['end_time']
                 seats = int(serializer.validated_data['seats_needed'])
                 current_date = serializer.validated_data['date']
-
+                
                 # if the start time is between 00:00 and 12:00
-                if int(str(start_t)[:2] ) < 12:
-                    return Response('Start time should be within the restauran\'s working hours. (12:00 PM - 11:59 PM)', status=status.HTTP_400_BAD_REQUEST)
+                if int(str(start_time)[:2]) < 12:
+                    return Response('Time should be within the restauran\'s working hours. (12:00 PM - 11:59 PM)', status=status.HTTP_400_BAD_REQUEST)
                 
                 # if the end time is between 00:00 and 12:00
-                if int(str(end_t)[:2]) < 12:
+                if int(str(end_time)[:2]) < 12:
                     return Response('End time should be within the restauran\'s working hours. (12:00 PM - 11:59 PM)', status=status.HTTP_400_BAD_REQUEST)
                 
+                if start_time < datetime.now().time() and current_date == date.today():
+                    return Response('Reservations cannot be before the current time')
+
                 # if end time is before start time 
-                if start_t > end_t:
+                if start_time > end_time:
                     return Response('End time cannot be before start time.', status=status.HTTP_400_BAD_REQUEST)
                 
                 # if the date is before the current day
                 if current_date < date.today():
                     return Response('Date cannot be before today.', status=status.HTTP_400_BAD_REQUEST)
 
-                # if the number of seats requested is 2 or 1
-                if seats <= 2  and seats > 0:
-                    table = Table.objects.filter(no_of_seats='2').first()
-                    if table :
-                        serializer.validated_data.update({'table':int(table.pk), 'employee': str(user.pk)})
-                        return Response(serializer.validated_data)
-                    return Response('no tables are available', status=status.HTTP_400_BAD_REQUEST)
-                
-                # if the number of seats requested is 4 or less
-                elif seats <= 4:
-                    table = Table.objects.get(no_of_seats='4')
-                    if table :
-                        serializer.validated_data.update({'table':int(table.pk), 'employee': str(user.pk)})
-                        return Response(serializer.validated_data)
-                    return Response('no tables are available', status=status.HTTP_400_BAD_REQUEST)
-                
-                # if the number of seats requested is 6 or less
-                elif seats <= 6:
-                    table = Table.objects.get(no_of_seats='6')
-                    if table :
-                        serializer.validated_data.update({'table':int(table.pk), 'employee': str(user.pk)})
-                        return Response(serializer.validated_data)
-                    return Response('no tables are available', status=status.HTTP_400_BAD_REQUEST)
-                
-                else:
-                    # if the number of seats requested is greater than 6/ less than 1
-                    return Response('No tables are available with this number of seats.', status=status.HTTP_400_BAD_REQUEST)
-                
+                table = get_table(seats)
+
+                if table:
+                    # if more than one table are returned
+                    if isinstance(table, list):
+                        for t in table:
+                            if not is_reserved(start_time, end_time, t):
+                                serializer.validated_data.update({'employee': user, 'table': t})
+                                serializer.save()
+                                return Response(f'The table is successfully reserved from {start_time} to {end_time} on {current_date}', status=status.HTTP_201_CREATED)
+                            return Response('The rquested table is fully booked for the rquested time.', status=status.HTTP_400_BAD_REQUEST)
+                        
+                    elif not is_reserved(start_time, end_time, table):
+                        serializer.validated_data.update({'employee': user, 'table': table})
+                        serializer.save()
+                        return Response(f'The table is successfully reserved from {start_time} to {end_time} on {current_date}', status=status.HTTP_201_CREATED)
+                    
+                    return Response('The table is reserved already.', status=status.HTTP_400_BAD_REQUEST)
+
                 
                 
                 #serializer.update()
-                return Response(serializer.validated_data)
+                return Response('The table does not exist.', status=status.HTTP_400_BAD_REQUEST)

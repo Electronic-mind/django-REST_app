@@ -1,8 +1,5 @@
 from rest_framework import serializers
 from . import models
-from authorize.models import User
-from datetime import datetime
-
 
 class ReservationSerializer(serializers.ModelSerializer):
 

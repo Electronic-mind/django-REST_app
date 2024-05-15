@@ -1,7 +1,8 @@
 from django.db import models
 from datetime import timezone
 from django.core.exceptions import ValidationError
-from authorize.models import User
+from user_management.models import User
+from datetime import datetime
 
 
 def validate_date(date):
@@ -17,16 +18,16 @@ class Table(models.Model):
 
 
 class Reservation(models.Model):
-    start_t = models.TimeField()
-    end_t = models.TimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     date = models.DateField(validators=[validate_date])
     table = models.ForeignKey(Table, related_name='reservations', blank=True, on_delete=models.CASCADE)
     employee = models.ForeignKey(User, related_name='reservations', blank=True, on_delete=models.CASCADE)
     seats_needed = models.IntegerField()
     date_created = models.DateTimeField(auto_now_add=True)
-
+    
     class Meta:
         ordering = ['date_created']
 
     def __str__(self):
-        return f"A reservation from {self.start_t} to {self.end_t} for table number {self.table_id} for {self.seats_needed} people."
+        return f"A reservation from {self.time} to {self.end_time} for table number {self.table} for {self.seats_needed} people."
