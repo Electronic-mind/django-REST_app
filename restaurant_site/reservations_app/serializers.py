@@ -17,3 +17,6 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 class DeleteReservationSerializer(serializers.Serializer):
     reservation_id = serializers.IntegerField()
+
+class CheckTimeSlotsSerializer(serializers.Serializer):
+    number_of_seats = serializers.IntegerField(max_value=6, min_value=1)

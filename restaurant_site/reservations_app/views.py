@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from rest_framework.permissions import AllowAny
+from rest_framework.pagination import LimitOffsetPagination
 
 from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
 
-from .serializers import ReservationSerializer, DeleteReservationSerializer
+from .serializers import ReservationSerializer, DeleteReservationSerializer, CheckTimeSlotsSerializer
 from .models import Reservation, Table
 from .queries import *
 
@@ -21,6 +22,7 @@ class ReservationAPIView(APIView):
     '''Here is a list of all the reservations'''
     authentication_classes = (JWTAuthentication,)
     permission_classes = (AllowAny,)
+    pagination_class = LimitOffsetPagination
 
     def get(self, request):
         # Check if the access token exists
@@ -168,12 +170,59 @@ class DeleteReservationAPIView(APIView):
         if user.is_authenticated:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid(raise_exception=True):
+
+                # Query the reservations to find the specified reservation
                 reservation_id = serializer.data['reservation_id']
                 reservation = Reservation.objects.filter(id=reservation_id)
                 if reservation:
+                    # delete the reservation if it exists
                     reservation.delete()
                     return Response('The reservation is successfully deleted.', status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response('The reservation does not exist.', status=status.HTTP_404_NOT_FOUND)
+        return AuthenticationFailed('Unauthenticated user.')
+    
+
+class CheckTimeSlotsAPIView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (AllowAny,)
+    serializer_class = CheckTimeSlotsSerializer
+
+    def get(self, request):
+        # Retrieve user access token
+        user_token = request.COOKIES.get('access_token')
+        if not user_token:
+            raise AuthenticationFailed('Unauthenticated user.')
+        
+        payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
+
+        user_model = get_user_model()
+        user = user_model.objects.filter(emp_id=payload['emp_id']).first()
+
+        # check if the user is authenticated
+        if user.is_authenticated:
+            return Response({'message': 'choose a reservation to delete.'})
+        return AuthenticationFailed('Unauthenticated user.')
+    
+    def post(self, request):
+        # Retrieve user access token
+        user_token = request.COOKIES.get('access_token')
+        if not user_token:
+            raise AuthenticationFailed('Unauthenticated user.')
+        
+        payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
+
+        user_model = get_user_model()
+        user = user_model.objects.filter(emp_id=payload['emp_id']).first()
+
+        # check if the user is authenticated
+        if user.is_authenticated:
+
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                seats = int(serializer.data['number_of_seats'])
+                table = get_table(seats)
+
+                
         return AuthenticationFailed('Unauthenticated user.')
     
