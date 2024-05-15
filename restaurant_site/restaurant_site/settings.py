@@ -30,9 +30,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Custom User model for logging in 
-AUTH_USER_MODEL = "authorize.User"
+AUTH_USER_MODEL = "user_management.User"
 
-TIME_INPUT_FORMATS = ('%I:%M %P',)
+TIME_INPUT_FORMATS = ('%I:%M %p',)
 
 
 # Application definition
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 
-    'authorize',
+    'user_management',
     'reservations_app'
 ]
 
