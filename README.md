@@ -2,6 +2,25 @@
 
 This project is a restaurant table reservation system that allows staff users to reserve tables for customers for a given date and time period.
 
+The project contains two apps:
+- user_management
+- reservations_app
+
+
+## user_management
+
+This app handles the registration and authentication of users. In ```views.py```, there are 4 API views:
+
+- UserRegistrationAPIView
+- UserLoginAPIView
+- UserAPIView
+- UserLogoutAPIView
+
+### UserRegistrationAPIView
+
+UserRegistrationAPIView has two methods:
+```get(self, request)``` : Handles the GET request, and prompts the user to enter their info.
+```post(self, request)```: Handles the 
 
 
 ## Installation
