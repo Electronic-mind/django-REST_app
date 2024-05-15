@@ -40,6 +40,6 @@ This app handles the registration and authentication of users. In ```views.py```
 
 UserRegistrationAPIView has two methods:
 ```get(self, request)``` : Handles the GET request, and prompts the user to enter their info.
-```post(self, request)```: Handles the 
+```post(self, request)```: Handles the POST request, and creates a new user with the entered credentials.
 
 
