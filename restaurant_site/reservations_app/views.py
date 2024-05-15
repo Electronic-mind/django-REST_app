@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
 
-from .serializers import ReservationSerializer
+from .serializers import ReservationSerializer, DeleteReservationSerializer
 from .models import Reservation, Table
 from .queries import *
 
@@ -76,10 +76,8 @@ class NewReservationAPIView(APIView):
         # check if the user is authenticated
         if user.is_authenticated:
 
-
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid(raise_exception=True):
-
 
                 start_time = serializer.validated_data['start_time']
                 end_time = serializer.validated_data['end_time']
@@ -105,6 +103,7 @@ class NewReservationAPIView(APIView):
                 if current_date < date.today():
                     return Response('Date cannot be before today.', status=status.HTTP_400_BAD_REQUEST)
 
+                
                 table = get_table(seats)
 
                 if table:
@@ -112,19 +111,69 @@ class NewReservationAPIView(APIView):
                     if isinstance(table, list):
                         for t in table:
                             if not is_reserved(start_time, end_time, t):
+                                # if the table is free for the given time slot
                                 serializer.validated_data.update({'employee': user, 'table': t})
                                 serializer.save()
                                 return Response(f'The table is successfully reserved from {start_time} to {end_time} on {current_date}', status=status.HTTP_201_CREATED)
                             return Response('The rquested table is fully booked for the rquested time.', status=status.HTTP_400_BAD_REQUEST)
                         
+                    # if only one table is returned
                     elif not is_reserved(start_time, end_time, table):
+                        # if the table is free for the given time slot
                         serializer.validated_data.update({'employee': user, 'table': table})
                         serializer.save()
                         return Response(f'The table is successfully reserved from {start_time} to {end_time} on {current_date}', status=status.HTTP_201_CREATED)
                     
-                    return Response('The table is reserved already.', status=status.HTTP_400_BAD_REQUEST)
+                    return Response('The rquested table is fully booked for the rquested time.', status=status.HTTP_400_BAD_REQUEST)
 
-                
-                
-                #serializer.update()
+                # if the table is None
                 return Response('The table does not exist.', status=status.HTTP_400_BAD_REQUEST)
+        return AuthenticationFailed('Unauthenticated user.')
+
+
+class DeleteReservationAPIView(APIView):
+    '''Delete a reservation for the current working day'''
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (AllowAny,)
+    serializer_class = DeleteReservationSerializer
+
+    def get(self, request):
+        # Retrieve user access token
+        user_token = request.COOKIES.get('access_token')
+        if not user_token:
+            raise AuthenticationFailed('Unauthenticated user.')
+        
+        payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
+
+        user_model = get_user_model()
+        user = user_model.objects.filter(emp_id=payload['emp_id']).first()
+
+        # check if the user is authenticated
+        if user.is_authenticated:
+            return Response({'message': 'choose a reservation to delete.'})
+        return AuthenticationFailed('Unauthenticated user.')
+    
+    def post(self, request):
+        # Retrieve user access token
+        user_token = request.COOKIES.get('access_token')
+        if not user_token:
+            raise AuthenticationFailed('Unauthenticated user.')
+        
+        payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
+
+        user_model = get_user_model()
+        user = user_model.objects.filter(emp_id=payload['emp_id']).first()
+
+        # check if the user is authenticated
+        if user.is_authenticated:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                reservation_id = serializer.data['reservation_id']
+                reservation = Reservation.objects.filter(id=reservation_id)
+                if reservation:
+                    reservation.delete()
+                    return Response('The reservation is successfully deleted.', status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response('The reservation does not exist.', status=status.HTTP_404_NOT_FOUND)
+        return AuthenticationFailed('Unauthenticated user.')
+    

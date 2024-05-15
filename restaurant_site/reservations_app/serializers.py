@@ -13,3 +13,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Reservation
         fields = ['start_time', 'end_time', 'date', 'seats_needed', 'table', 'employee']
+
+
+class DeleteReservationSerializer(serializers.Serializer):
+    reservation_id = serializers.IntegerField()
