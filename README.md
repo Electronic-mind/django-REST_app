@@ -1,4 +1,4 @@
-# Restaurant reservation system using Django REST framwork
+# Restaurant reservation system using Django REST framework
 
 This project is a restaurant table reservation system that allows staff users to reserve tables for customers for a given date and time period.
 
