@@ -16,6 +16,7 @@ from restaurant_site import settings
 
 # The view for registering new users
 class UserRegistrationAPIView(APIView):
+    '''Sign up as a new user'''
     # set the serializer, authentication, and permission classes for this API
     serializer_class = UserRegistrationSerializer
     authentication_classes = (JWTAuthentication,)
@@ -24,8 +25,7 @@ class UserRegistrationAPIView(APIView):
 
     def get(self, request):
         # Handle GET request
-        content = {'message': 'Hello!'}
-        return Response(content)
+        return Response('Please enter your id, name and password.')
     
     def post(self, request):
         # Handle POST requests
@@ -93,17 +93,20 @@ class UserLoginAPIView(APIView):
     
 
 class UserViewAPI(APIView):
+    '''Here are the user details'''
     authentication_classes = (JWTAuthentication,)
     permission_classes = (AllowAny,)
 
     def get(self, request):
         user_token = request.COOKIES.get('access_token')
 
+        # Check the user access token
         if not user_token:
             raise AuthenticationFailed('Unauthenticated user.')
         
         payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
 
+        # get the user Id from the token and query the user information
         user_model = get_user_model()
         user = user_model.objects.filter(emp_id=payload['emp_id']).first()
         user_serializer = UserRegistrationSerializer(user)
@@ -115,6 +118,7 @@ class UserLogoutViewAPI(APIView):
 	permission_classes = (AllowAny,)
 
 	def get(self, request):
+          # get the user token from the cookies
 		user_token = request.COOKIES.get('access_token', None)
 		if user_token:
 			response = Response()
@@ -124,58 +128,9 @@ class UserLogoutViewAPI(APIView):
 			}
 			return response
 		response = Response()
+          
+        # if the cookies don't exist
 		response.data = {
 			'message': 'User is already logged out.'
 		}
 		return response
-
-
-
-
-
-
-
-
-
-
-'''
-
-@csrf_exempt
-def list_tables(request):
-    
-    if request.method == "GET":
-        tables = list(models.Table.objects.values())
-        return JsonResponse(tables, safe=False, status=200)
-    elif request.method == "POST":
-        table = request.body
-        new_data = json.loads(table)
-        new_table = models.Table(**new_data)
-        new_table.save()
-
-        return JsonResponse(new_data, safe=False, status=200)
-    
-
-@csrf_exempt
-def table_details(request, pk):
-    global tables
-    try:
-        table = next (table for table in tables if table["id"] == pk)
-    except StopIteration:
-        return JsonResponse({"status": f"There is no table with id {pk}"})
-    
-    if request.method == "GET":
-
-        return JsonResponse(table)
-    
-    elif request.method == "PUT":
-        new_data = request.body
-        new_data = json.loads(new_data)
-        new_data_index = tables.index(table)
-        tables[new_data_index] = new_data
-        return JsonResponse(tables, safe=False)
-    
-    elif request.method == "DELETE":
-        tables = list(filter(lambda table: table["id"] != pk,tables ))
-        return HttpResponse(status=204)
-    
-'''

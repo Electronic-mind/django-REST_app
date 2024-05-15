@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('time', models.TimeField()),
                 ('duration', models.DurationField()),
-                ('date', models.DateField(validators=[reservations_app.models.validate_date])),
+                ('date', models.DateField()),
                 ('seats_needed', models.IntegerField()),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('end_time', models.TimeField()),

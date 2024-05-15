@@ -1,0 +1,30 @@
+[
+    {
+        "model": "reservations_app.table",
+         "pk": 1,
+         "fields": {
+            "no_of_seats": 2
+        }
+    }, 
+    {
+        "model": "reservations_app.table",
+        "pk": 2,
+        "fields": {
+            "no_of_seats": 2
+        }
+    }, 
+    {
+        "model": "reservations_app.table",
+        "pk": 3,
+        "fields": {
+            "no_of_seats": 4
+        }
+    }, 
+    {
+        "model": "reservations_app.table",
+        "pk": 4,
+        "fields": {
+            "no_of_seats": 6
+        }
+    }
+]

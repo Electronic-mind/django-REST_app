@@ -86,6 +86,9 @@ class NewReservationAPIView(APIView):
                 seats = int(serializer.validated_data['seats_needed'])
                 current_date = serializer.validated_data['date']
                 
+
+                # -------------Input validation----------------
+
                 # if the start time is between 00:00 and 12:00
                 if int(str(start_time)[:2]) < 12:
                     return Response('Time should be within the restauran\'s working hours. (12:00 PM - 11:59 PM)', status=status.HTTP_400_BAD_REQUEST)
@@ -105,7 +108,8 @@ class NewReservationAPIView(APIView):
                 if current_date < date.today():
                     return Response('Date cannot be before today.', status=status.HTTP_400_BAD_REQUEST)
 
-                
+                # -------------------reservation process-----------------
+                # retrieve a table with the requested number of seats
                 table = get_table(seats)
 
                 if table:
@@ -201,7 +205,7 @@ class CheckTimeSlotsAPIView(APIView):
 
         # check if the user is authenticated
         if user.is_authenticated:
-            return Response({'message': 'choose a reservation to delete.'})
+            return Response({'message': 'choose the number of seats to query available time slots.'})
         return AuthenticationFailed('Unauthenticated user.')
     
     def post(self, request):
@@ -222,6 +226,8 @@ class CheckTimeSlotsAPIView(APIView):
             if serializer.is_valid(raise_exception=True):
                 seats = int(serializer.data['number_of_seats'])
                 table = get_table(seats)
+
+                #TODO: query the available time slots
 
                 
         return AuthenticationFailed('Unauthenticated user.')

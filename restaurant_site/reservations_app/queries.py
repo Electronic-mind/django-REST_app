@@ -35,6 +35,7 @@ def get_available_time_slots(table):
     reservations = Reservation.objects.filter(start_time=datetime.now().time(), table=table, date=date.today())
     if reservations.exists():
         available_time = reservations.filter()
+        # TODO: query the reservations for the available times
     else:
         return f"{datetime.now().strftime('%H:%M %p')} - 11:59 PM"
 
