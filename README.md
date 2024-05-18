@@ -38,27 +38,31 @@ This app handles the registration and authentication of users. In ```views.py```
 
 ### UserRegistrationAPIView
 
-UserRegistrationAPIView handles two methods:
+UserRegistrationAPIView handles two methods:  
+
 ```get(self, request)``` : Handles the GET request, and prompts the user to enter their info.
 ```post(self, request)```: Handles the POST request, and creates a new user with the entered credentials along with a JWT token to log them in during the current session.
 
 
 ### UserLoginAPIView
 
-UserLoginAPIView handles two methods:
+UserLoginAPIView handles two methods:  
+
 ```get(self, request)``` : Handles the GET request, and prompts the user to enter their credentials.
 ```post(self, request)```: Handles the POST request, and logs the user in, if the user exists, and generates a JWT token to log them in during the current session.
 
 
 ### UserAPIView
 
-UserAPIView handles one method:
+UserAPIView handles one method:  
+
 ```get(self, request)``` : Handles the GET request, and returns the user informations if the user is logged in, else it will raise AuthenticationFailed error.
 
 
 ### UserLogoutAPIView
 
-UserLogoutAPIView handles one method:
+UserLogoutAPIView handles one method:  
+
 ```get(self, request)``` : Handles the GET request, and gets the access token from the cookies in the browser and destroys it.
 
 
