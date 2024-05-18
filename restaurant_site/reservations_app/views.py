@@ -132,7 +132,7 @@ class NewReservationAPIView(APIView):
                         serializer.save()
                         return Response(f'The table is successfully reserved from {start_time} to {end_time} on {current_date}', status=status.HTTP_201_CREATED)
                     
-                    return Response('The rquested table is fully booked for the rquested time.', status=status.HTTP_400_BAD_REQUEST)
+                    return Response('The rquested table is reserved for the rquested time.', status=status.HTTP_400_BAD_REQUEST)
 
                 # if the table is None
                 return Response('The table does not exist.', status=status.HTTP_400_BAD_REQUEST)
@@ -158,7 +158,7 @@ class DeleteReservationAPIView(APIView):
 
         # check if the user is authenticated
         if user.is_authenticated:
-            return Response({'message': 'choose a reservation to delete.'})
+            return Response({'message': 'choose a reservation to delete.', 'reservations': Reservation.objects.filter(date__gte=date.today(), start_time__gt=datetime.now().time())})
         return AuthenticationFailed('Unauthenticated user.')
     
     def post(self, request):
@@ -179,7 +179,7 @@ class DeleteReservationAPIView(APIView):
 
                 # Query the reservations to find the specified reservation
                 reservation_id = serializer.data['reservation_id']
-                reservation = Reservation.objects.filter(id=reservation_id)
+                reservation = Reservation.objects.filter(id=reservation_id, date__gte=date.today(), start_time__gt=datetime.now().time())
                 if reservation:
                     # delete the reservation if it exists
                     reservation.delete()
@@ -228,6 +228,10 @@ class CheckTimeSlotsAPIView(APIView):
             if serializer.is_valid(raise_exception=True):
                 seats = int(serializer.data['number_of_seats'])
                 table = get_table(seats)
+
+                available_time = get_available_time_slots(table)
+
+                return Response(str(available_time))
 
                 #TODO: query the available time slots
 
