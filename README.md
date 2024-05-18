@@ -40,7 +40,7 @@ This app handles the registration and authentication of users. In ```views.py```
 
 UserRegistrationAPIView handles two methods:  
 
-```get(self, request)``` : Handles the GET request, and prompts the user to enter their info.
+```get(self, request)``` : Handles the GET request, and prompts the user to enter their info.  
 ```post(self, request)```: Handles the POST request, and creates a new user with the entered credentials along with a JWT token to log them in during the current session.
 
 
@@ -48,7 +48,7 @@ UserRegistrationAPIView handles two methods:
 
 UserLoginAPIView handles two methods:  
 
-```get(self, request)``` : Handles the GET request, and prompts the user to enter their credentials.
+```get(self, request)``` : Handles the GET request, and prompts the user to enter their credentials.  
 ```post(self, request)```: Handles the POST request, and logs the user in, if the user exists, and generates a JWT token to log them in during the current session.
 
 
