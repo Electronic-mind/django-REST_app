@@ -78,8 +78,7 @@ UserLogoutAPIView handles one method:
 
 ```get(self, request)``` : Handles the GET request, and gets the access token from the cookies in the browser and destroys it.
 
-
-  
+---
 
 ## reservation_app
 
